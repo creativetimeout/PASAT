@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from '../hooks/useTranslation.js';
 
 /**
  * Self-contained input: holds its own value to avoid re-rendering
@@ -22,6 +23,7 @@ export default function AnswerInput({
   clearSignal,
   locked,
 }) {
+  const t = useTranslation();
   const [value, setValue] = useState('');
   const inputRef = useRef(null);
   const lockedRef = useRef(locked);
@@ -81,7 +83,7 @@ export default function AnswerInput({
         value={value}
         onChange={(e) => change(e.target.value)}
         onKeyDown={handleKeyDown}
-        aria-label="Antwort eingeben und mit Enter bestätigen"
+        aria-label={t('answerAriaLabel')}
         className={`w-full max-w-[16rem] mx-auto block text-center text-6xl sm:text-7xl font-semibold tabular-nums py-4 rounded-ios-lg bg-ios-fill-1 dark:bg-ios-dark-surface-2 text-gray-900 dark:text-white placeholder-ios-gray/40 border-0 caret-transparent focus:outline-none transition ${
           showTouchButtons ? '' : 'focus:ring-4 focus:ring-ios-blue/30'
         }`}
@@ -96,7 +98,7 @@ export default function AnswerInput({
               type="button"
               onClick={() => change(String(n))}
               className="py-3 rounded-ios bg-ios-fill-1 dark:bg-ios-dark-surface-2 text-gray-900 dark:text-gray-100 text-[17px] font-medium active:bg-ios-fill-2 dark:active:bg-ios-dark-border transition"
-              aria-label={`Antwort ${n} eintragen`}
+              aria-label={t('answerButtonAriaLabel', { n })}
             >
               {n}
             </button>
@@ -106,7 +108,7 @@ export default function AnswerInput({
             onClick={() => change('')}
             className="col-span-5 py-2.5 rounded-ios bg-ios-fill-2 dark:bg-ios-dark-border text-[13px] font-medium text-gray-700 dark:text-gray-200 active:opacity-70 transition"
           >
-            Eingabe löschen
+            {t('clearInput')}
           </button>
         </div>
       )}

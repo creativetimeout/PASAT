@@ -1,7 +1,9 @@
 import React, { useMemo } from 'react';
 import { groupVoicesByLang } from '../lib/speechVoices.js';
+import { useTranslation } from '../hooks/useTranslation.js';
 
 export default function SettingsPanel({ settings, voices, onChange, onClose }) {
+  const t = useTranslation();
   const grouped = useMemo(() => groupVoicesByLang(voices), [voices]);
   const langKeys = useMemo(() => Object.keys(grouped).sort(), [grouped]);
 
@@ -11,19 +13,19 @@ export default function SettingsPanel({ settings, voices, onChange, onClose }) {
     <div className="mx-auto w-full max-w-md px-5 pt-10 pb-10">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-[28px] font-bold tracking-tight text-gray-900 dark:text-white">
-          Einstellungen
+          {t('settings')}
         </h2>
         <button
           type="button"
           onClick={onClose}
           className="text-ios-blue dark:text-ios-blue-dark text-[17px] font-semibold active:opacity-60 transition"
         >
-          Fertig
+          {t('done')}
         </button>
       </div>
 
-      <Group title="Audio">
-        <Row label="Sprache">
+      <Group title={t('groupAudio')}>
+        <Row label={t('labelVoiceLang')}>
           <Select
             value={settings.lang}
             onChange={(v) => update({ lang: v, voiceURI: null })}
@@ -34,20 +36,20 @@ export default function SettingsPanel({ settings, voices, onChange, onClose }) {
             }
           />
         </Row>
-        <Row label="Stimme">
+        <Row label={t('labelVoice')}>
           <Select
             value={settings.voiceURI ?? ''}
             onChange={(v) => update({ voiceURI: v || null })}
             options={[
-              { value: '', label: 'Standard' },
+              { value: '', label: t('voiceDefault') },
               ...(grouped[settings.lang] || []).map((v) => ({
                 value: v.voiceURI,
-                label: `${v.name}${v.default ? ' (Std.)' : ''}`,
+                label: `${v.name}${v.default ? t('voiceDefaultSuffix') : ''}`,
               })),
             ]}
           />
         </Row>
-        <RowStack label="Sprechgeschwindigkeit" value={`${settings.rate.toFixed(2)}×`}>
+        <RowStack label={t('labelRate')} value={`${settings.rate.toFixed(2)}×`}>
           <input
             type="range"
             min="0.8"
@@ -57,7 +59,7 @@ export default function SettingsPanel({ settings, voices, onChange, onClose }) {
             onChange={(e) => update({ rate: parseFloat(e.target.value) })}
           />
         </RowStack>
-        <RowStack label="Lautstärke" value={`${Math.round(settings.volume * 100)}%`} last>
+        <RowStack label={t('labelVolume')} value={`${Math.round(settings.volume * 100)}%`} last>
           <input
             type="range"
             min="0"
@@ -70,44 +72,53 @@ export default function SettingsPanel({ settings, voices, onChange, onClose }) {
       </Group>
 
       <p className="px-4 -mt-3 mb-5 text-[12px] text-gray-600 dark:text-gray-300">
-        Stimmen-Auswahl ist browserabhängig.
+        {t('voiceNote')}
       </p>
 
-      <Group title="Test">
-        <Row label="Länge">
+      <Group title={t('groupTest')}>
+        <Row label={t('labelLength')}>
           <Select
             value={String(settings.testLength)}
             onChange={(v) => update({ testLength: parseInt(v, 10) })}
             options={[
-              { value: '61', label: '61 (60 Antw.)' },
-              { value: '31', label: '31 (30 Antw.)' },
+              { value: '61', label: t('length61') },
+              { value: '31', label: t('length31') },
             ]}
           />
         </Row>
-        <Row label="Intervall" last>
+        <Row label={t('labelInterval')} last>
           <Select
             value={String(settings.intervalMs)}
             onChange={(v) => update({ intervalMs: parseInt(v, 10) })}
             options={[
-              { value: '3000', label: '3,0 s (PASAT-3)' },
-              { value: '2000', label: '2,0 s (PASAT-2)' },
+              { value: '3000', label: t('interval3000') },
+              { value: '2000', label: t('interval2000') },
             ]}
           />
         </Row>
       </Group>
 
-      <Group title="Darstellung">
+      <Group title={t('groupDisplay')}>
         <ToggleRow
-          label="Touch-Buttons 0–18"
+          label={t('labelTouchButtons')}
           checked={settings.showTouchButtons}
           onChange={(v) => update({ showTouchButtons: v })}
         />
         <ToggleRow
-          label="Dark Mode"
+          label={t('labelDarkMode')}
           checked={settings.darkMode}
           onChange={(v) => update({ darkMode: v })}
-          last
         />
+        <Row label={t('labelUiLang')} last>
+          <Select
+            value={settings.uiLang ?? 'de'}
+            onChange={(v) => update({ uiLang: v })}
+            options={[
+              { value: 'de', label: t('uiLangDe') },
+              { value: 'en', label: t('uiLangEn') },
+            ]}
+          />
+        </Row>
       </Group>
     </div>
   );

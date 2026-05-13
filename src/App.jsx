@@ -5,11 +5,14 @@ import TestRunner from './components/TestRunner.jsx';
 import ResultScreen from './components/ResultScreen.jsx';
 import { usePasatEngine, PHASES } from './hooks/usePasatEngine.js';
 import { pickDefaultVoice } from './lib/speechVoices.js';
+import { getT } from './lib/i18n.js';
+import { I18nContext } from './hooks/useTranslation.js';
 
 const SETTINGS_KEY = 'pasat-settings';
 
 function getDefaultSettings() {
   const browserLang = typeof navigator !== 'undefined' ? navigator.language || 'de-DE' : 'de-DE';
+  const uiLang = browserLang.startsWith('en') ? 'en' : 'de';
   return {
     lang: browserLang,
     voiceURI: null,
@@ -19,6 +22,7 @@ function getDefaultSettings() {
     intervalMs: 3000,
     showTouchButtons: false,
     darkMode: false,
+    uiLang,
   };
 }
 
@@ -34,6 +38,7 @@ function loadSettings() {
 
 export default function App() {
   const [settings, setSettings] = useState(loadSettings);
+  const t = useMemo(() => getT(settings.uiLang), [settings.uiLang]);
 
   useEffect(() => {
     try {
@@ -119,24 +124,26 @@ export default function App() {
   }
 
   return (
-    <div
-      className="min-h-screen bg-ios-fill-1 dark:bg-ios-dark-bg text-gray-900 dark:text-gray-100 font-sans antialiased transition-colors"
-      style={{
-        paddingTop: 'env(safe-area-inset-top)',
-        paddingBottom: 'env(safe-area-inset-bottom)',
-        paddingLeft: 'env(safe-area-inset-left)',
-        paddingRight: 'env(safe-area-inset-right)',
-      }}
-    >
-      {content}
-      {!engine.supported && (
-        <div
-          className="fixed left-3 right-3 p-4 rounded-ios bg-ios-red/95 text-white text-[15px] text-center shadow-ios backdrop-blur-md"
-          style={{ bottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}
-        >
-          Dein Browser unterstützt die Web Speech API nicht. Der Test funktioniert nicht.
-        </div>
-      )}
-    </div>
+    <I18nContext.Provider value={t}>
+      <div
+        className="min-h-screen bg-ios-fill-1 dark:bg-ios-dark-bg text-gray-900 dark:text-gray-100 font-sans antialiased transition-colors"
+        style={{
+          paddingTop: 'env(safe-area-inset-top)',
+          paddingBottom: 'env(safe-area-inset-bottom)',
+          paddingLeft: 'env(safe-area-inset-left)',
+          paddingRight: 'env(safe-area-inset-right)',
+        }}
+      >
+        {content}
+        {!engine.supported && (
+          <div
+            className="fixed left-3 right-3 p-4 rounded-ios bg-ios-red/95 text-white text-[15px] text-center shadow-ios backdrop-blur-md"
+            style={{ bottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}
+          >
+            {t('noSpeechApi')}
+          </div>
+        )}
+      </div>
+    </I18nContext.Provider>
   );
 }

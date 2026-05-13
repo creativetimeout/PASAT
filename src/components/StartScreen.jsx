@@ -1,14 +1,17 @@
-import React from "react";
+import React from 'react';
+import { useTranslation } from '../hooks/useTranslation.js';
 
 export default function StartScreen({
 	onStartPractice,
 	onStartTest,
 	onOpenSettings,
 }) {
+	const t = useTranslation();
+
 	return (
 		<div
 			className="mx-auto w-full max-w-md px-5 pt-8 pb-12 flex flex-col"
-			style={{ minHeight: "100dvh" }}
+			style={{ minHeight: '100dvh' }}
 		>
 			<header className="flex items-center gap-5 mb-8">
 				<img
@@ -22,20 +25,20 @@ export default function StartScreen({
 						PASAT-3
 					</h1>
 					<p className="mt-1 text-[17px] text-gray-600 dark:text-gray-300">
-						Selbsttest
+						{t('subtitle')}
 					</p>
 				</div>
 			</header>
 
 			<section className="rounded-ios-lg bg-white dark:bg-ios-dark-surface px-5 py-4 shadow-ios">
 				<p className="text-[15px] leading-relaxed text-gray-800 dark:text-gray-100">
-					Addiere jede gehörte Zahl mit der{" "}
-					<span className="font-semibold">vorherigen</span> — nicht die laufende
-					Summe.
+					{t('instructionPre')}
+					<span className="font-semibold">{t('instructionEm')}</span>
+					{t('instructionPost')}
 				</p>
 				<div className="mt-3 rounded-ios bg-ios-fill-1 dark:bg-ios-dark-surface-2 px-4 py-3">
 					<p className="text-[11px] uppercase tracking-wider font-semibold text-gray-600 dark:text-gray-300 mb-1">
-						Beispiel
+						{t('example')}
 					</p>
 					<p className="text-[15px] text-gray-900 dark:text-white font-mono">
 						2, 5, 3, 8 → 7, 8, 11
@@ -44,7 +47,7 @@ export default function StartScreen({
 			</section>
 
 			<p className="mt-4 text-center text-[12px] leading-relaxed text-gray-600 dark:text-gray-400">
-				Nur zur persönlichen Übung. Kein medizinisches Diagnoseinstrument.
+				{t('disclaimer')}
 			</p>
 
 			<div className="mt-auto pt-8 space-y-3">
@@ -53,21 +56,21 @@ export default function StartScreen({
 					onClick={onStartTest}
 					className="w-full px-6 py-4 rounded-ios-lg bg-ios-blue dark:bg-ios-blue-dark text-white text-[17px] font-semibold shadow-ios active:opacity-80 transition focus:outline-none focus:ring-4 focus:ring-ios-blue/30"
 				>
-					Test starten
+					{t('startTest')}
 				</button>
 				<button
 					type="button"
 					onClick={onStartPractice}
 					className="w-full px-6 py-4 rounded-ios-lg bg-white dark:bg-ios-dark-surface text-ios-blue dark:text-ios-blue-dark text-[17px] font-semibold shadow-ios active:opacity-70 transition focus:outline-none focus:ring-4 focus:ring-ios-blue/20"
 				>
-					Übung (10 Zahlen)
+					{t('startPractice')}
 				</button>
 				<button
 					type="button"
 					onClick={onOpenSettings}
 					className="w-full px-6 py-4 rounded-ios-lg bg-white dark:bg-ios-dark-surface text-ios-blue dark:text-ios-blue-dark text-[17px] font-semibold shadow-ios active:opacity-70 transition focus:outline-none focus:ring-4 focus:ring-ios-blue/20"
 				>
-					Einstellungen
+					{t('openSettings')}
 				</button>
 			</div>
 		</div>

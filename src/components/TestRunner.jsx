@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import AnswerInput from './AnswerInput.jsx';
 import NumberDisplay from './NumberDisplay.jsx';
 import IntervalProgress from './IntervalProgress.jsx';
+import { useTranslation } from '../hooks/useTranslation.js';
 
 export default function TestRunner({
   state,
@@ -11,6 +12,7 @@ export default function TestRunner({
   onAbort,
   isPractice,
 }) {
+  const t = useTranslation();
   const [confirmAbort, setConfirmAbort] = useState(false);
   const totalAnswers = Math.max(0, state.sequence.length - 1);
   const answeredCount = state.answers.filter((a) => a != null).length;
@@ -24,7 +26,7 @@ export default function TestRunner({
           aria-live="polite"
           className="text-[13px] font-medium uppercase tracking-wider text-gray-600 dark:text-gray-300"
         >
-          {isPractice ? 'Übung' : 'Test'}
+          {isPractice ? t('modeLabel_practice') : t('modeLabel_test')}
         </span>
         <span className="text-[13px] tabular-nums text-gray-600 dark:text-gray-300">
           {answeredCount} / {totalAnswers}
@@ -68,7 +70,7 @@ export default function TestRunner({
 
         {state.currentIndex < 1 && (
           <p className="text-center text-[13px] text-gray-600 dark:text-gray-300 mt-5">
-            Erste Zahl wird gesprochen — warte auf die zweite, dann addiere.
+            {t('firstNumberHint')}
           </p>
         )}
 
@@ -86,7 +88,7 @@ export default function TestRunner({
             onClick={() => setConfirmAbort(true)}
             className="px-5 py-2.5 text-[15px] font-medium rounded-full text-ios-red active:opacity-60 transition"
           >
-            Abbrechen
+            {t('abort')}
           </button>
         ) : (
           <div className="inline-flex gap-2">
@@ -95,14 +97,14 @@ export default function TestRunner({
               onClick={onAbort}
               className="px-5 py-2.5 text-[15px] font-semibold rounded-full bg-ios-red text-white active:opacity-80 transition"
             >
-              Wirklich abbrechen
+              {t('abortConfirm')}
             </button>
             <button
               type="button"
               onClick={() => setConfirmAbort(false)}
               className="px-5 py-2.5 text-[15px] font-medium rounded-full bg-white dark:bg-ios-dark-surface text-gray-900 dark:text-gray-100 shadow-ios active:opacity-70 transition"
             >
-              Weiter
+              {t('abortCancel')}
             </button>
           </div>
         )}
