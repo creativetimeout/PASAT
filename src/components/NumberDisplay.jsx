@@ -10,15 +10,17 @@ export default function NumberDisplay({ currentIndex }) {
   useEffect(() => {
     if (currentIndex < 0) return;
     setPulse(true);
-    const id = setTimeout(() => setPulse(false), 300);
+    const id = setTimeout(() => setPulse(false), 350);
     return () => clearTimeout(id);
   }, [currentIndex]);
 
   return (
-    <div className="flex justify-center my-4" aria-hidden="true">
+    <div className="flex justify-center" aria-hidden="true">
       <div
-        className={`w-4 h-4 rounded-full transition-all duration-300 ${
-          pulse ? 'bg-blue-500 scale-150' : 'bg-gray-300 dark:bg-gray-600 scale-100'
+        className={`w-3 h-3 rounded-full transition-all duration-300 ease-out ${
+          pulse
+            ? 'bg-ios-blue dark:bg-ios-blue-dark scale-[2] opacity-100'
+            : 'bg-ios-fill-3 dark:bg-ios-dark-border scale-100 opacity-70'
         }`}
       />
     </div>

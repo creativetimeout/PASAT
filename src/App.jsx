@@ -108,19 +108,6 @@ export default function App() {
         onHome={engine.reset}
       />
     );
-  } else if (phase === PHASES.ABORTED) {
-    content = (
-      <div className="mx-auto max-w-2xl px-6 py-12 text-center text-gray-900 dark:text-gray-100">
-        <h2 className="text-2xl font-semibold mb-4">Test abgebrochen</h2>
-        <button
-          type="button"
-          onClick={engine.reset}
-          className="px-6 py-3 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium"
-        >
-          Zurück zum Start
-        </button>
-      </div>
-    );
   } else {
     content = (
       <StartScreen
@@ -132,10 +119,21 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors">
+    <div
+      className="min-h-screen bg-ios-fill-1 dark:bg-ios-dark-bg text-gray-900 dark:text-gray-100 font-sans antialiased transition-colors"
+      style={{
+        paddingTop: 'env(safe-area-inset-top)',
+        paddingBottom: 'env(safe-area-inset-bottom)',
+        paddingLeft: 'env(safe-area-inset-left)',
+        paddingRight: 'env(safe-area-inset-right)',
+      }}
+    >
       {content}
       {!engine.supported && (
-        <div className="fixed bottom-4 left-4 right-4 p-3 rounded bg-red-100 text-red-800 text-sm text-center">
+        <div
+          className="fixed left-3 right-3 p-4 rounded-ios bg-ios-red/95 text-white text-[15px] text-center shadow-ios backdrop-blur-md"
+          style={{ bottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}
+        >
           Dein Browser unterstützt die Web Speech API nicht. Der Test funktioniert nicht.
         </div>
       )}

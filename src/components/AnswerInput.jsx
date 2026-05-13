@@ -8,42 +8,58 @@ import React, { useEffect, useRef, useState } from 'react';
  *   can persist the latest value into its ref (deadline-commit needs it).
  * - `onSubmit(value)` commits on Enter or button press.
  * - `clearSignal` (any value) triggers a local reset whenever it changes.
+ * - `locked` blocks all input while TTS is speaking the next number, so
+ *   late keystrokes from the previous challenge don't carry over.
+ *
+ * The input is never disabled — focus is held from the moment the test starts
+ * so no layout shift (soft keyboard appearing) interferes with the first tap.
+ * The engine itself ignores submissions before the first answerable position.
  */
 export default function AnswerInput({
   onPendingChange,
   onSubmit,
   showTouchButtons,
-  disabled,
   clearSignal,
+  locked,
 }) {
   const [value, setValue] = useState('');
   const inputRef = useRef(null);
+  const lockedRef = useRef(locked);
+  lockedRef.current = locked;
 
-  // Reset on each commit signal (Enter or deadline).
   useEffect(() => {
     setValue('');
     onPendingChange('');
-    if (!disabled) inputRef.current?.focus();
+    inputRef.current?.focus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clearSignal]);
 
-  // Re-focus when enabled flips.
   useEffect(() => {
-    if (!disabled) inputRef.current?.focus();
-  }, [disabled]);
+    inputRef.current?.focus();
+  }, []);
+
+  // Hard-reset the value the moment TTS starts speaking the next number,
+  // so any stray keystroke that lands in this window cannot fill the field.
+  useEffect(() => {
+    if (locked) {
+      setValue('');
+      onPendingChange('');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locked]);
 
   const change = (v) => {
+    if (lockedRef.current) return;
     setValue(v);
     onPendingChange(v);
   };
 
   const submit = (v) => {
+    if (lockedRef.current) return;
     onSubmit(v);
-    // Local clear is also handled by clearSignal, but do it immediately
-    // for snappier feel.
     setValue('');
     onPendingChange('');
-    if (!disabled) inputRef.current?.focus();
+    inputRef.current?.focus();
   };
 
   const handleKeyDown = (e) => {
@@ -58,15 +74,18 @@ export default function AnswerInput({
       <input
         ref={inputRef}
         type="number"
-        inputMode="numeric"
+        inputMode={showTouchButtons ? 'none' : 'numeric'}
         autoComplete="off"
         autoFocus
-        disabled={disabled}
+        readOnly={locked}
         value={value}
         onChange={(e) => change(e.target.value)}
         onKeyDown={handleKeyDown}
         aria-label="Antwort eingeben und mit Enter bestätigen"
-        className="w-full max-w-xs mx-auto block text-center text-6xl py-4 px-6 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        className={`w-full max-w-[16rem] mx-auto block text-center text-6xl sm:text-7xl font-semibold tabular-nums py-4 rounded-ios-lg bg-ios-fill-1 dark:bg-ios-dark-surface-2 text-gray-900 dark:text-white placeholder-ios-gray/40 border-0 caret-transparent focus:outline-none transition ${
+          showTouchButtons ? '' : 'focus:ring-4 focus:ring-ios-blue/30'
+        }`}
+        placeholder="–"
       />
 
       {showTouchButtons && (
@@ -75,19 +94,17 @@ export default function AnswerInput({
             <button
               key={n}
               type="button"
-              disabled={disabled}
-              onClick={() => submit(String(n))}
-              className="py-3 rounded bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-lg font-medium focus:outline-none focus:ring-2 focus:ring-blue-400"
-              aria-label={`Antwort ${n}`}
+              onClick={() => change(String(n))}
+              className="py-3 rounded-ios bg-ios-fill-1 dark:bg-ios-dark-surface-2 text-gray-900 dark:text-gray-100 text-[17px] font-medium active:bg-ios-fill-2 dark:active:bg-ios-dark-border transition"
+              aria-label={`Antwort ${n} eintragen`}
             >
               {n}
             </button>
           ))}
           <button
             type="button"
-            disabled={disabled}
             onClick={() => change('')}
-            className="col-span-5 py-2 rounded bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-sm"
+            className="col-span-5 py-2.5 rounded-ios bg-ios-fill-2 dark:bg-ios-dark-border text-[13px] font-medium text-gray-700 dark:text-gray-200 active:opacity-70 transition"
           >
             Eingabe löschen
           </button>

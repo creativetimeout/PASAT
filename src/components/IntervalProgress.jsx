@@ -1,44 +1,69 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 /**
- * Visualises the remaining time of the current answer-interval.
- * Restarts whenever `tick` changes, runs a CSS width transition from 100% to 0%
- * over `durationMs`. Pure CSS animation → no per-frame React re-renders.
+ * Circular interval-countdown gauge. Restarts whenever `tick` changes, runs a
+ * CSS stroke-dashoffset transition from full → empty over `durationMs`. Pure CSS
+ * animation → no per-frame React re-renders.
  */
-export default function IntervalProgress({ tick, durationMs }) {
-  const [progress, setProgress] = useState(0); // 0..100, 100 = full, 0 = elapsed
+export default function IntervalProgress({ tick, durationMs, size = 32, stroke = 3.5 }) {
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const [offset, setOffset] = useState(circumference);
   const rafRef = useRef(null);
 
   useEffect(() => {
     if (!tick || !durationMs) {
-      setProgress(0);
+      setOffset(circumference);
       return;
     }
-    // Reset to 100% (no transition), then on next frame transition to 0%.
-    setProgress(100);
+    // Reset to full (no transition), then on next frame transition to empty.
+    setOffset(0);
     cancelAnimationFrame(rafRef.current);
     rafRef.current = requestAnimationFrame(() => {
       rafRef.current = requestAnimationFrame(() => {
-        setProgress(0);
+        setOffset(circumference);
       });
     });
     return () => cancelAnimationFrame(rafRef.current);
-  }, [tick, durationMs]);
+  }, [tick, durationMs, circumference]);
 
   const active = tick > 0;
+  const cx = size / 2;
+  const cy = size / 2;
 
   return (
-    <div
-      className="h-2 w-full max-w-xs mx-auto bg-gray-200 dark:bg-gray-700 rounded overflow-hidden"
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      className="-rotate-90"
       aria-hidden="true"
     >
-      <div
-        className="h-full bg-blue-500 dark:bg-blue-400 rounded"
+      <circle
+        cx={cx}
+        cy={cy}
+        r={radius}
+        fill="none"
+        strokeWidth={stroke}
+        className="stroke-ios-fill-2 dark:stroke-ios-dark-border"
+      />
+      <circle
+        cx={cx}
+        cy={cy}
+        r={radius}
+        fill="none"
+        strokeWidth={stroke}
+        strokeLinecap="round"
+        className="stroke-ios-blue dark:stroke-ios-blue-dark"
         style={{
-          width: `${progress}%`,
-          transition: active && progress === 0 ? `width ${durationMs}ms linear` : 'none',
+          strokeDasharray: circumference,
+          strokeDashoffset: offset,
+          transition:
+            active && offset === circumference
+              ? `stroke-dashoffset ${durationMs}ms linear`
+              : 'none',
         }}
       />
-    </div>
+    </svg>
   );
 }

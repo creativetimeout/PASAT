@@ -23,6 +23,7 @@ const initialState = {
   commitCount: 0, // increments on every committed answer (used as clear signal)
   intervalTick: 0, // increments each time a new answer-interval starts (onend → next onset)
   intervalDurationMs: 0, // duration of the currently running answer-interval
+  isSpeaking: false, // true between TTS onStart and onEnd of the current number
   result: null,
   ttsWarning: null,
 };
@@ -48,6 +49,9 @@ function reducer(state, action) {
     }
     case 'ONSET': {
       return { ...state, currentIndex: action.index };
+    }
+    case 'SET_SPEAKING': {
+      return { ...state, isSpeaking: action.value };
     }
     case 'INTERVAL_START': {
       return {
@@ -103,6 +107,7 @@ export function usePasatEngine(settings) {
   const onsetTsRef = useRef([]); // ms timestamp per spoken number
   const lastSpeakCalledAtRef = useRef(0);
   const pendingValueRef = useRef('');
+  const pendingInputAtRef = useRef(null); // performance.now() when user last changed the input
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
 
@@ -139,17 +144,26 @@ export function usePasatEngine(settings) {
           // So at onset of seq[index] (index >= 2), the deadline for answer[index-2] has arrived.
           if (index >= 2) {
             const answerIndex = index - 2;
+            const onsetTs = onsetTsRef.current[index - 1];
+            const inputTs = pendingInputAtRef.current;
+            const reactionMs =
+              inputTs != null && onsetTs != null
+                ? Math.max(0, Math.round(inputTs - onsetTs))
+                : null;
             dispatch({
               type: 'COMMIT_ANSWER',
               index: answerIndex,
               value: pendingValueRef.current,
-              reactionMs: null,
+              reactionMs,
             });
             pendingValueRef.current = '';
+            pendingInputAtRef.current = null;
           }
           dispatch({ type: 'ONSET', index });
+          dispatch({ type: 'SET_SPEAKING', value: true });
         },
         onEnd: () => {
+          dispatch({ type: 'SET_SPEAKING', value: false });
           // Interval starts only AFTER the number was fully spoken,
           // so the user gets the full intervalMs as response time.
           const isLast = index === sequence.length - 1;
@@ -159,11 +173,17 @@ export function usePasatEngine(settings) {
           timerRef.current = setTimeout(() => {
             if (isLast) {
               // Final commit window has elapsed for the last answer.
+              const lastOnsetTs = onsetTsRef.current[sequence.length - 1];
+              const lastInputTs = pendingInputAtRef.current;
+              const lastReactionMs =
+                lastInputTs != null && lastOnsetTs != null
+                  ? Math.max(0, Math.round(lastInputTs - lastOnsetTs))
+                  : null;
               dispatch({
                 type: 'COMMIT_ANSWER',
                 index: sequence.length - 2,
                 value: pendingValueRef.current,
-                reactionMs: null,
+                reactionMs: lastReactionMs,
               });
               dispatch({ type: 'COMPLETE' });
               clearTimer();
@@ -183,6 +203,7 @@ export function usePasatEngine(settings) {
       const seq = generateSequence(length);
       onsetTsRef.current = [];
       pendingValueRef.current = '';
+      pendingInputAtRef.current = null;
       dispatch({ type: 'START_RUN', sequence: seq, mode });
       // Kick off first utterance on next tick to ensure state has updated.
       setTimeout(() => speakIndex(seq, 0), 50);
@@ -206,21 +227,26 @@ export function usePasatEngine(settings) {
   }, [state.currentIndex, state.answers]);
 
   // Updates pending value ref only — no React state change, no re-render.
-  // The engine reads this ref at deadline / submit.
+  // Also records the timestamp for reaction-time calculation on deadline-commit.
   const updatePending = useCallback((value) => {
     pendingValueRef.current = value;
+    pendingInputAtRef.current = value !== '' ? performance.now() : null;
   }, []);
 
   const abort = useCallback(() => {
     clearTimer();
     cancel();
-    dispatch({ type: 'ABORT' });
+    pendingValueRef.current = '';
+    pendingInputAtRef.current = null;
+    onsetTsRef.current = [];
+    dispatch({ type: 'RESET' });
   }, [cancel]);
 
   const reset = useCallback(() => {
     clearTimer();
     cancel();
     pendingValueRef.current = '';
+    pendingInputAtRef.current = null;
     onsetTsRef.current = [];
     dispatch({ type: 'RESET' });
   }, [cancel]);
