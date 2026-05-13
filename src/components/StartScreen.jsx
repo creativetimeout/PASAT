@@ -12,7 +12,7 @@ export default function StartScreen({
 		>
 			<header className="flex items-center gap-5 mb-8">
 				<img
-					src="/pasat-icon.jpg"
+					src="/pasat-icon.png"
 					alt=""
 					aria-hidden="true"
 					className="w-32 h-32 sm:w-36 sm:h-36 rounded-[22%] shadow-[0_12px_32px_-6px_rgba(0,0,0,0.32)] dark:shadow-[0_12px_32px_-6px_rgba(0,0,0,0.75)] ring-1 ring-black/5 dark:ring-white/10 shrink-0"
