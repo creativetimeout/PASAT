@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import AnswerInput from './AnswerInput.jsx';
 import NumberDisplay from './NumberDisplay.jsx';
 import IntervalProgress from './IntervalProgress.jsx';

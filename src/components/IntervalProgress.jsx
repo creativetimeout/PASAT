@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /**
  * Circular interval-countdown gauge. Restarts whenever `tick` changes, runs a
@@ -13,6 +13,7 @@ export default function IntervalProgress({ tick, durationMs, size = 32, stroke =
 
   useEffect(() => {
     if (!tick || !durationMs) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setOffset(circumference);
       return;
     }

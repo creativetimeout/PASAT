@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 /**
  * Subtle visual pulse on each number onset — does NOT display the number
@@ -9,6 +9,7 @@ export default function NumberDisplay({ currentIndex }) {
 
   useEffect(() => {
     if (currentIndex < 0) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPulse(true);
     const id = setTimeout(() => setPulse(false), 350);
     return () => clearTimeout(id);

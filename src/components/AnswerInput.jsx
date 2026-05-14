@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from '../hooks/useTranslation.js';
 
 /**
@@ -27,9 +27,13 @@ export default function AnswerInput({
   const [value, setValue] = useState('');
   const inputRef = useRef(null);
   const lockedRef = useRef(locked);
-  lockedRef.current = locked;
 
   useEffect(() => {
+    lockedRef.current = locked;
+  }, [locked]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setValue('');
     onPendingChange('');
     inputRef.current?.focus();
@@ -44,6 +48,7 @@ export default function AnswerInput({
   // so any stray keystroke that lands in this window cannot fill the field.
   useEffect(() => {
     if (locked) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setValue('');
       onPendingChange('');
     }

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { groupVoicesByLang } from '../lib/speechVoices.js';
 import { useTranslation } from '../hooks/useTranslation.js';
 

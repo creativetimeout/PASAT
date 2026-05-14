@@ -1,10 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import StartScreen from './components/StartScreen.jsx';
 import SettingsPanel from './components/SettingsPanel.jsx';
 import TestRunner from './components/TestRunner.jsx';
 import ResultScreen from './components/ResultScreen.jsx';
 import { usePasatEngine, PHASES } from './hooks/usePasatEngine.js';
-import { pickDefaultVoice } from './lib/speechVoices.js';
 import { getT } from './lib/i18n.js';
 import { I18nContext } from './hooks/useTranslation.js';
 
@@ -54,31 +53,7 @@ export default function App() {
     else root.classList.remove('dark');
   }, [settings.darkMode]);
 
-  // Resolve voice object from URI + voice list.
-  // The engine takes a full settings object — we adapt here.
-  const engineSettings = useMemo(() => {
-    return {
-      ...settings,
-      voice: null, // filled in just before run start; updated below
-    };
-  }, [settings]);
-
-  const engine = usePasatEngine(engineSettings);
-
-  // After voices load, resolve the selected voice each render.
-  const resolvedVoice = useMemo(() => {
-    if (!engine.voices?.length) return null;
-    if (settings.voiceURI) {
-      const found = engine.voices.find((v) => v.voiceURI === settings.voiceURI);
-      if (found) return found;
-    }
-    return pickDefaultVoice(engine.voices, settings.lang);
-  }, [engine.voices, settings.voiceURI, settings.lang]);
-
-  // Patch the engine's settings ref via re-rendering by passing a new object.
-  // We rely on the engine internally reading settingsRef.current at speak-time,
-  // so simply updating engineSettings's voice each render is enough.
-  engineSettings.voice = resolvedVoice;
+  const engine = usePasatEngine(settings);
 
   const phase = engine.state.phase;
 

@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useReducer, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 import { generateSequence } from '../lib/numberSequence.js';
 import { evaluateAnswers } from '../lib/scoring.js';
 import { useSpeech } from './useSpeech.js';
+import { pickDefaultVoice } from '../lib/speechVoices.js';
 
 export const PHASES = {
   IDLE: 'IDLE',
@@ -109,7 +110,20 @@ export function usePasatEngine(settings) {
   const pendingValueRef = useRef('');
   const pendingInputAtRef = useRef(null); // performance.now() when user last changed the input
   const settingsRef = useRef(settings);
-  settingsRef.current = settings;
+  const speakIndexRef = useRef(null);
+
+  const resolvedVoice = useMemo(() => {
+    if (!voices?.length) return null;
+    if (settings.voiceURI) {
+      const found = voices.find((v) => v.voiceURI === settings.voiceURI);
+      if (found) return found;
+    }
+    return pickDefaultVoice(voices, settings.lang);
+  }, [voices, settings.voiceURI, settings.lang]);
+
+  useEffect(() => {
+    settingsRef.current = { ...settings, voice: resolvedVoice };
+  }, [settings, resolvedVoice]);
 
   const clearTimer = () => {
     if (timerRef.current) {
@@ -188,7 +202,7 @@ export function usePasatEngine(settings) {
               dispatch({ type: 'COMPLETE' });
               clearTimer();
             } else {
-              speakIndex(sequence, index + 1);
+              speakIndexRef.current(sequence, index + 1);
             }
           }, intervalMs);
         },
@@ -196,6 +210,10 @@ export function usePasatEngine(settings) {
     },
     [speak]
   );
+
+  useEffect(() => {
+    speakIndexRef.current = speakIndex;
+  }, [speakIndex]);
 
   const startRun = useCallback(
     (mode) => {
